@@ -124,86 +124,96 @@ def parse_file(file_full_ref):
     #Questions creation
     problems = list()
     q_i = 1
-    while(i != -1 and i < len(united_text)):
-        if united_text[i :i + 10 + len(str(q_i))] != "\nQuestion " + str(q_i):
-            raise IncorrectSyntax("Incorrect syntax of the question entry")
-        options = [question_type.MULTIPLE_CHOICE, shuffle.NO_SHUFFLE, partial_credit.NO_PARTIAL_CREDIT]
-        start_of_question = united_text.find("\n", i + 1)
-        #start_of_answers = min(united_text.find("\n*"), united_text.find("\nA:"))
-        end_of_question = united_text.find("\nQuestion", start_of_question)
-        if end_of_question == -1:
-            end_of_question = len(united_text)
-        question_announcement = united_text[i + 1 : start_of_question]
-        full_question = united_text[start_of_question : end_of_question]
-        #print(question_announcement)
-        #print(full_question)
+    try:
+        while(i != -1 and i < len(united_text)):
+            if united_text[i :i + 10 + len(str(q_i))] != "\nQuestion " + str(q_i):
+                raise IncorrectSyntax("Incorrect syntax of the question entry")
+            options = [question_type.MULTIPLE_CHOICE, shuffle.NO_SHUFFLE, partial_credit.NO_PARTIAL_CREDIT]
+            start_of_question = united_text.find("\n", i + 1)
+            #start_of_answers = min(united_text.find("\n*"), united_text.find("\nA:"))
+            end_of_question = united_text.find("\nQuestion", start_of_question)
+            if end_of_question == -1:
+                end_of_question = len(united_text)
+            question_announcement = united_text[i + 1 : start_of_question]
+            full_question = united_text[start_of_question : end_of_question]
+            #print(question_announcement)
+            #print(full_question)
 
-        #Type recognizing
-        if question_announcement.find("multiple choice") != -1:
-            if full_question.count('\n*') > 1:
-                options[0] = question_type.MULTIPLE_CHOICE
-            else:
+            #Type recognizing
+            if question_announcement.find("multiple choice") != -1:
+                if full_question.count('\n*') > 1:
+                    options[0] = question_type.MULTIPLE_CHOICE
+                else:
+                    options[0] = question_type.SINGLE_CHOICE
+            if question_announcement.find("single correct answer") != -1:
                 options[0] = question_type.SINGLE_CHOICE
-        if question_announcement.find("single correct answer") != -1:
-            options[0] = question_type.SINGLE_CHOICE
-        if question_announcement.find("multiple correct answers") != -1:
-            options[0] = question_type.MULTIPLE_CHOICE
-        if question_announcement.find("checkbox") != -1:
-            options[0] = question_type.MULTIPLE_CHOICE
-        if question_announcement.find("text match") != -1:
-            options[0] = question_type.TEXT_MATCH
-        if question_announcement.find("math expression") != -1:
-            options[0] = question_type.MATH_EXPRESSION
-        if question_announcement.find("numeric") != -1:
-            options[0] = question_type.NUMERIC
-        if question_announcement.find("regex") != -1:
-            raise IncorrectSyntax("Unsupported question type: regular expression")
-        if question_announcement.find("regular expression") != -1:
-            raise IncorrectSyntax("Unsupported question type: regular expression")
-        if question_announcement.find("reflective single choice") != -1:
-            raise IncorrectSyntax("Unsupported question type: reflective single choice")
-        if question_announcement.find("reflective multiple choice") != -1:
-            raise IncorrectSyntax("Unsupported question type: reflective multiple choice")
-        if question_announcement.find("reflective text answer") != -1:
-            raise IncorrectSyntax("Unsupported question type: reflective text answer")
+            if question_announcement.find("multiple correct answers") != -1:
+                options[0] = question_type.MULTIPLE_CHOICE
+            if question_announcement.find("checkbox") != -1:
+                options[0] = question_type.MULTIPLE_CHOICE
+            if question_announcement.find("text match") != -1:
+                options[0] = question_type.TEXT_MATCH
+            if question_announcement.find("math expression") != -1:
+                options[0] = question_type.MATH_EXPRESSION
+            if question_announcement.find("numeric") != -1:
+                options[0] = question_type.NUMERIC
+            if question_announcement.find("regex") != -1:
+                raise IncorrectSyntax("Unsupported question type: regular expression")
+            if question_announcement.find("regular expression") != -1:
+                raise IncorrectSyntax("Unsupported question type: regular expression")
+            if question_announcement.find("reflective single choice") != -1:
+                raise IncorrectSyntax("Unsupported question type: reflective single choice")
+            if question_announcement.find("reflective multiple choice") != -1:
+                raise IncorrectSyntax("Unsupported question type: reflective multiple choice")
+            if question_announcement.find("reflective text answer") != -1:
+                raise IncorrectSyntax("Unsupported question type: reflective text answer")
 
-        #Adding other options
-        if question_announcement.find("shuffle") != -1:
-            options[1] = shuffle.SHUFFLE
-        if question_announcement.find("no shuffle") != -1:
-            options[1] = shuffle.NO_SHUFFLE        
-        if question_announcement.find("partial credit") != -1:
-            options[2] = partial_credit.PARTIAL_CREDIT
-        if question_announcement.find("no partial credit") != -1:
-            options[2] = partial_credit.NO_PARTIAL_CREDIT
+            #Adding other options
+            if question_announcement.find("shuffle") != -1:
+                options[1] = shuffle.SHUFFLE
+            if question_announcement.find("no shuffle") != -1:
+                options[1] = shuffle.NO_SHUFFLE        
+            if question_announcement.find("partial credit") != -1:
+                options[2] = partial_credit.PARTIAL_CREDIT
+            if question_announcement.find("no partial credit") != -1:
+                options[2] = partial_credit.NO_PARTIAL_CREDIT
 
-        full_question = MathJax_border_fix(full_question)
-        if options[0] ==  question_type.SINGLE_CHOICE:
-            problem = create_multiple_choice_question(options, full_question)
-        if options[0] ==  question_type.MULTIPLE_CHOICE:
-            problem = create_checkbox_question(options, full_question)
-        if options[0] ==  question_type.NUMERIC:
-            problem = create_numeric_question(full_question)
-        if options[0] ==  question_type.MATH_EXPRESSION:
-            problem = create_math_expression_question(full_question)
-        if options[0] ==  question_type.TEXT_MATCH:
-            problem = create_text_match_question(full_question)
+            full_question = MathJax_border_fix(full_question)
+            if options[0] ==  question_type.SINGLE_CHOICE:
+                problem = create_multiple_choice_question(options, full_question)
+            if options[0] ==  question_type.MULTIPLE_CHOICE:
+                problem = create_checkbox_question(options, full_question)
+            if options[0] ==  question_type.NUMERIC:
+                problem = create_numeric_question(full_question)
+            if options[0] ==  question_type.MATH_EXPRESSION:
+                problem = create_math_expression_question(full_question)
+            if options[0] ==  question_type.TEXT_MATCH:
+                problem = create_text_match_question(full_question)
 
-        problem_text = []
-        problem.add_to_text(problem_text)
-        problem_str = '\n'.join(problem_text)
-        #print(problem_str + '\n')
+            problem_text = []
+            problem.add_to_text(problem_text)
+            problem_str = '\n'.join(problem_text)
+            #print(problem_str + '\n')
 
-        lib.add_problem("q" + str(q_i))
-        problems.append(problem_str)
-        q_i += 1
-        i = end_of_question
+            lib.add_problem("q" + str(q_i))
+            problems.append(problem_str)
+            q_i += 1
+            i = end_of_question
 
 
-    lib_text = []
-    lib.add_to_text(lib_text)
-    lib_str = '\n'.join(lib_text)
-    #print(lib_str + '\n')
+        lib_text = []
+        lib.add_to_text(lib_text)
+        lib_str = '\n'.join(lib_text)
+        #print(lib_str + '\n')
+    except IncorrectSyntax as ex:
+        print("The conversion was stopped for the following reasons:\n", ex.args[0])
+        lib_str = ""
+        problems = []
+    except xml_elements.IncorrectSyntax as ex:
+        print("Это число больше загаданного, попробуйте еще раз!\n", ex.args[0])
+        lib_str = ""
+        problems = []
+
 
     return lib_str, problems
 

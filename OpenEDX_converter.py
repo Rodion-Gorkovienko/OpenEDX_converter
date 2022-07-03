@@ -19,7 +19,7 @@ while True:
     else:
         print("Path incorrect.")
 
-while True:
+while lib != "":
     directory_path = input('Enter the path to the directory where the resulting files will be placed: ')
 
     if os.path.exists(directory_path):
